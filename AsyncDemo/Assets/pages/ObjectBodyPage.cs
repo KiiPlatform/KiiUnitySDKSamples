@@ -12,39 +12,36 @@ using KiiCorp.Cloud.Storage;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
-public class ObjectPage : BasePage, IPage
+public class ObjectBodyPage : BasePage, IPage
 {
 	private KiiObject obj;
 
+	private Encoding enc = Encoding.GetEncoding("UTF-8");
+
 	// Object content
-	private Rect contentTextRect = new Rect(320, 64, 320, 320);
-	private string content = "(not refreshed)";
+	private Rect contentTextRect = new Rect(0, 64, 320, 320);
+	private string content = "(Progress here)";
 
-	// Refresh
-	private Rect refrechButtonRect = new Rect(0, 128, 320, 64);
+	// text area
+	private Rect bodyTextAreaRect = new Rect(0, 128, 480, 256);
 
-	// Update Patch
-	private Rect updatePatchButtonRect = new Rect(0, 192, 320, 64);
+	// Upload
+	private Rect uploadButtonRect = new Rect(0, 384, 320, 64);
 
-	// Update all field
-	private Rect updateAllButtonRect = new Rect(0, 256, 320, 64);
+	// Download
+	private Rect downloadButtonRect = new Rect(320, 384, 320, 64);
 
-	// Delete
-	private Rect deleteButtonRect = new Rect(0, 320, 320, 64);
-
-	// ACL entries
-	private Rect listACLButtonRect = new Rect(0, 384, 320, 64);
-
-	// Object body
-	private Rect objectBodyButtonRect = new Rect(320, 384, 320, 64);
+	private string body;
 
 	private bool buttonEnable = true;
-	private IList<KiiACLEntry<KiiObject, ObjectAction>> aclList = new List<KiiACLEntry<KiiObject, ObjectAction>>();
 
-	public ObjectPage (MainCamera camera, KiiObject obj) : base(camera)
+	public ObjectBodyPage (MainCamera camera, KiiObject obj) : base(camera)
 	{
 		this.obj = obj;
+		this.body = "";
 	}
 
 	#region IPage implementation
@@ -56,21 +53,9 @@ public class ObjectPage : BasePage, IPage
 
 		GUI.enabled = buttonEnable;
 		bool backClicked = GUI.Button(backButtonRect, "<");
-		bool refreshClicked = GUI.Button(refrechButtonRect, "Refresh");
-		bool updatePatchClicked = GUI.Button(updatePatchButtonRect, "UpdatePatch");
-		bool updateAllClicked = GUI.Button(updateAllButtonRect, "UpdateAll");
-		bool deleteClicked = GUI.Button(deleteButtonRect, "Delete");
-		bool listACLClicked = GUI.Button(listACLButtonRect, "List ACL");
-		bool objectBodyClicked = GUI.Button(objectBodyButtonRect, "Object body");
-		for (int i = 0 ; i < aclList.Count ; ++i)
-		{
-			if (GUI.Button(new Rect(0, i * 64 + 448, 640, 64), aclList[i].Action.ToString() + "/" + aclList[i].Subject.Subject))
-			{
-				// revoke?
-				PerformRevoke(aclList[i]);
-				return;
-			}
-		}
+		this.body = GUI.TextArea(bodyTextAreaRect, this.body);
+		bool uploadClicked = GUI.Button(uploadButtonRect, "Upload");
+		bool downloadClicked = GUI.Button(downloadButtonRect, "Download");
 		GUI.enabled = true;
 
 		if (backClicked)
@@ -78,34 +63,14 @@ public class ObjectPage : BasePage, IPage
 			PerformBack();
 			return;
 		}
-		if (refreshClicked)
+		if (uploadClicked)
 		{
-			PerformRefresh();
+			PerformUpload();
 			return;
 		}
-		if (updatePatchClicked)
+		if (downloadClicked)
 		{
-			PerformUpdatePatch();
-			return;
-		}
-		if (updateAllClicked)
-		{
-			PerformUpdateAll();
-			return;
-		}
-		if (deleteClicked)
-		{
-			PerformDelete();
-			return;
-		}
-		if (listACLClicked)
-		{
-			PerformListACL();
-			return;
-		}
-		if (objectBodyClicked)
-		{
-			ShowObjectBodyPage();
+			PerformDownload();
 			return;
 		}
 	}
@@ -200,7 +165,6 @@ public class ObjectPage : BasePage, IPage
 				message = "Failed to list ACL " + e.ToString();
 				return;
 			}
-			aclList = list;
 			message = "List ACL succeeded";
 		});
 	}
@@ -219,7 +183,6 @@ public class ObjectPage : BasePage, IPage
 				Debug.Log("body : " + (e as CloudException).Body);
 				return;
 			}
-			aclList.Clear();
 			message = "Revoke ACL succeeded";
 		});
 	}
@@ -234,9 +197,67 @@ public class ObjectPage : BasePage, IPage
 		}
 	}
 
-	void ShowObjectBodyPage ()
+	void ShowObjectBody ()
 	{
-		camera.PushPage(new ObjectBodyPage(camera, obj));
+//		camera.PushPage(new GroupMenuPage(camera, group));
+	}
+
+	void PerformUpload ()
+	{
+		message = "Uploading object body...";
+		ButtonEnabled = false;
+
+		byte[] data = enc.GetBytes(this.body);
+		MemoryStream mem = new MemoryStream();
+		mem.Write(data, 0, data.Length);
+		mem.Seek(0, SeekOrigin.Begin);
+
+		obj.UploadBody("text/plain", mem, (KiiObject obj2, Exception e) =>
+		{
+			ButtonEnabled = true;
+			if (e != null)
+			{
+				message = "Failed to upload the body " + e.ToString();
+				Debug.Log("body : " + (e as CloudException).Body);
+				return;
+			}
+			message = "Upload body is succeeded.";
+		},
+		(KiiObject obj3, long doneByte, long totalByte) => 
+		{
+			this.content = String.Format("{0} / {1}", doneByte, totalByte);
+			Debug.Log(this.content);
+		});
+	}
+
+	void PerformDownload ()
+	{
+		message = "Downloading object body...";
+		ButtonEnabled = false;
+
+		MemoryStream mem = new MemoryStream(8192);
+
+		obj.DownloadBody(mem, (KiiObject obj2, Stream s, Exception e) => {
+			ButtonEnabled = true;
+			if (e != null)
+			{
+				message = "Failed to download the body " + e.ToString();
+				Debug.Log("body : " + (e as CloudException).Body);
+				s.Close();
+				return;
+			}
+			s.Seek(0, SeekOrigin.Begin);
+			StreamReader sr = new StreamReader(s);
+			this.body = sr.ReadToEnd();
+			sr.Close();
+			s.Close();
+			message = "Download body is succeeded.";
+		},
+		(KiiObject obj3, long doneByte, long totalByte) => 
+		{
+			this.content = String.Format("{0} / {1}", doneByte, totalByte);
+			Debug.Log(this.content);
+		});
 	}
 	#endregion
 }
