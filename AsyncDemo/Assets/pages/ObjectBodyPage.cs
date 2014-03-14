@@ -57,6 +57,9 @@ public class ObjectBodyPage : BasePage, IPage
 
 	private Rect publishExpireAtButtonRect = new Rect(480, 574, 320, 64);
 
+	// Delete Body
+	private Rect deleteBodyButtonRect = new Rect(0, 638, 320, 64);
+
 	private string body;
 	private string expireIn;
 	private string expireAtYear;
@@ -112,6 +115,7 @@ public class ObjectBodyPage : BasePage, IPage
 		bool publishClicked = GUI.Button(publishButtonRect, "Publish");
 		bool publishExpireInClicked = GUI.Button(publishExpireInButtonRect, "Publish ExpireIn");
 		bool publishExpireAtClicked = GUI.Button(publishExpireAtButtonRect, "Publish ExpireAt");
+		bool deleteBodyClicked = GUI.Button(deleteBodyButtonRect, "Delete body");
 		GUI.enabled = true;
 
 		if (backClicked)
@@ -144,6 +148,11 @@ public class ObjectBodyPage : BasePage, IPage
 			PerformPublishExpireAt();
 			return;
 		}
+		if (deleteBodyClicked)
+		{
+			PerformDeleteBody();
+			return;
+		}
 	}
 	
 	void PerformDelete ()
@@ -160,6 +169,23 @@ public class ObjectBodyPage : BasePage, IPage
 				return;
 			}
 			PerformBack();
+		});
+	}
+
+	void PerformDeleteBody ()
+	{
+		message = "Deleting object body...";
+		ButtonEnabled = false;
+		
+		obj.DeleteBody((KiiObject bodyDeletedObj, Exception e) =>
+		           {
+			ButtonEnabled = true;
+			if (e != null)
+			{
+				message = "Failed to delete body : " + e.ToString();
+				return;
+			}
+			message = "Delete body is succeeded.";
 		});
 	}
 
