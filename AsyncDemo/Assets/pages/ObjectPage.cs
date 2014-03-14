@@ -36,6 +36,9 @@ public class ObjectPage : BasePage, IPage
 	// ACL entries
 	private Rect listACLButtonRect = new Rect(0, 384, 320, 64);
 
+	// Object body
+	private Rect objectBodyButtonRect = new Rect(320, 384, 320, 64);
+
 	private bool buttonEnable = true;
 	private IList<KiiACLEntry<KiiObject, ObjectAction>> aclList = new List<KiiACLEntry<KiiObject, ObjectAction>>();
 
@@ -58,6 +61,7 @@ public class ObjectPage : BasePage, IPage
 		bool updateAllClicked = GUI.Button(updateAllButtonRect, "UpdateAll");
 		bool deleteClicked = GUI.Button(deleteButtonRect, "Delete");
 		bool listACLClicked = GUI.Button(listACLButtonRect, "List ACL");
+		bool objectBodyClicked = GUI.Button(objectBodyButtonRect, "Object body");
 		for (int i = 0 ; i < aclList.Count ; ++i)
 		{
 			if (GUI.Button(new Rect(0, i * 64 + 448, 640, 64), aclList[i].Action.ToString() + "/" + aclList[i].Subject.Subject))
@@ -97,6 +101,11 @@ public class ObjectPage : BasePage, IPage
 		if (listACLClicked)
 		{
 			PerformListACL();
+			return;
+		}
+		if (objectBodyClicked)
+		{
+			ShowObjectBodyPage();
 			return;
 		}
 	}
@@ -223,6 +232,11 @@ public class ObjectPage : BasePage, IPage
 		{
 			content += key + " = " + obj[key] + "\n";
 		}
+	}
+
+	void ShowObjectBodyPage ()
+	{
+		camera.PushPage(new ObjectBodyPage(camera, obj));
 	}
 	#endregion
 }
