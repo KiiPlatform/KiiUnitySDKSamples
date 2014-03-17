@@ -20,13 +20,17 @@ public class ObjectBodyPage : BasePage, IPage
 	private KiiObject obj;
 
 	private Encoding enc = Encoding.GetEncoding("UTF-8");
+	
+	// content-type of body to upload
+	private Rect upContentTypeLabelRect = new Rect(0, 64, 240, 64);
+	private Rect upContentTypeTextRect = new Rect(240, 64, 240, 64);
 
 	// Object content
-	private Rect contentTextRect = new Rect(0, 64, 480, 64);
+	private Rect contentTextRect = new Rect(0, 128, 480, 64);
 	private string content = "(Progress here)";
 
 	// text area
-	private Rect bodyTextAreaRect = new Rect(0, 128, 480, 256);
+	private Rect bodyTextAreaRect = new Rect(0, 192, 480, 192);
 
 	// Upload
 	private Rect uploadButtonRect = new Rect(0, 384, 320, 64);
@@ -61,6 +65,7 @@ public class ObjectBodyPage : BasePage, IPage
 	private Rect deleteBodyButtonRect = new Rect(0, 638, 320, 64);
 
 	private string body;
+	private string upBodyContentType;
 	private string expireIn;
 	private string expireAtYear;
 	private string expireAtMonth;
@@ -75,6 +80,7 @@ public class ObjectBodyPage : BasePage, IPage
 	{
 		this.obj = obj;
 		this.body = "";
+		this.upBodyContentType = "";
 		this.expireIn = "";
 		DateTime now = DateTime.Now;
 		this.expireAtYear = "" + now.Year;
@@ -110,6 +116,8 @@ public class ObjectBodyPage : BasePage, IPage
 		GUI.enabled = buttonEnable;
 		bool backClicked = GUI.Button(backButtonRect, "<");
 		this.body = GUI.TextArea(bodyTextAreaRect, this.body);
+		GUI.Label(upContentTypeLabelRect, "Content-Type");
+		this.upBodyContentType = GUI.TextArea (upContentTypeTextRect, this.upBodyContentType);
 		bool uploadClicked = GUI.Button(uploadButtonRect, "Upload");
 		bool downloadClicked = GUI.Button(downloadButtonRect, "Download");
 		bool publishClicked = GUI.Button(publishButtonRect, "Publish");
@@ -198,8 +206,9 @@ public class ObjectBodyPage : BasePage, IPage
 		MemoryStream mem = new MemoryStream();
 		mem.Write(data, 0, data.Length);
 		mem.Seek(0, SeekOrigin.Begin);
-
-		obj.UploadBody("text/plain", mem, (KiiObject obj2, Exception e) =>
+		String contentType = this.upBodyContentType == null ? "text/plain" : this.upBodyContentType;
+		Debug.Log ("content-type:"+contentType);
+		obj.UploadBody(contentType, mem, (KiiObject obj2, Exception e) =>
 		{
 			ButtonEnabled = true;
 			if (e != null)
@@ -228,7 +237,7 @@ public class ObjectBodyPage : BasePage, IPage
 			ButtonEnabled = true;
 			if (e != null)
 			{
-				message = "Failed to download the body " + e.ToString();
+				message = "Download failed,content-type:" + obj2.BodyContentType;
 				Debug.Log("body : " + (e as CloudException).Body);
 				s.Close();
 				return;
@@ -238,7 +247,7 @@ public class ObjectBodyPage : BasePage, IPage
 			this.body = sr.ReadToEnd();
 			sr.Close();
 			s.Close();
-			message = "Download body is succeeded.";
+			message = "Download Succeeded,content-type:" + obj2.BodyContentType;
 		},
 		(KiiObject obj3, long doneByte, long totalByte) => 
 		{
