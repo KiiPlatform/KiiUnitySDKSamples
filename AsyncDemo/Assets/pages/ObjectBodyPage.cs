@@ -41,6 +41,9 @@ public class ObjectBodyPage : BasePage, IPage
 	// Publish
 	private Rect publishButtonRect = new Rect(0, 448, 320, 64);
 
+	// content-type
+	private Rect contentTypeButtonRect = new Rect(320, 448, 320, 64);
+
 	// PublishExpiresIn
 	private Rect expireInTextRect = new Rect(0, 510, 160, 64);
 	private Rect expireInSecondLabelRect = new Rect(160, 510, 160, 64);
@@ -124,6 +127,7 @@ public class ObjectBodyPage : BasePage, IPage
 		bool publishExpireInClicked = GUI.Button(publishExpireInButtonRect, "Publish ExpireIn");
 		bool publishExpireAtClicked = GUI.Button(publishExpireAtButtonRect, "Publish ExpireAt");
 		bool deleteBodyClicked = GUI.Button(deleteBodyButtonRect, "Delete body");
+		bool contentTypeClicked = GUI.Button(contentTypeButtonRect, "Content Type");
 		GUI.enabled = true;
 
 		if (backClicked)
@@ -159,6 +163,11 @@ public class ObjectBodyPage : BasePage, IPage
 		if (deleteBodyClicked)
 		{
 			PerformDeleteBody();
+			return;
+		}
+		if (contentTypeClicked)
+		{
+			this.message = "content-type : " + obj.BodyContentType;
 			return;
 		}
 	}
@@ -237,7 +246,7 @@ public class ObjectBodyPage : BasePage, IPage
 			ButtonEnabled = true;
 			if (e != null)
 			{
-				message = "Download failed,content-type:" + obj2.BodyContentType;
+				message = "Download body failed " + e.ToString();
 				Debug.Log("body : " + (e as CloudException).Body);
 				s.Close();
 				return;
@@ -247,7 +256,7 @@ public class ObjectBodyPage : BasePage, IPage
 			this.body = sr.ReadToEnd();
 			sr.Close();
 			s.Close();
-			message = "Download Succeeded,content-type:" + obj2.BodyContentType;
+			message = "Download body Succeeded";
 		},
 		(KiiObject obj3, long doneByte, long totalByte) => 
 		{
