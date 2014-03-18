@@ -215,7 +215,7 @@ public class ObjectBodyPage : BasePage, IPage
 		MemoryStream mem = new MemoryStream();
 		mem.Write(data, 0, data.Length);
 		mem.Seek(0, SeekOrigin.Begin);
-		String contentType = this.upBodyContentType == null ? "text/plain" : this.upBodyContentType;
+		String contentType = String.IsNullOrEmpty(this.upBodyContentType) ? "text/plain" : this.upBodyContentType;
 		Debug.Log ("content-type:"+contentType);
 		obj.UploadBody(contentType, mem, (KiiObject obj2, Exception e) =>
 		{
