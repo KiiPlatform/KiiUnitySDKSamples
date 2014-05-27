@@ -217,6 +217,7 @@ public class ObjectBodyPage : BasePage, IPage
 		mem.Seek(0, SeekOrigin.Begin);
 		String contentType = String.IsNullOrEmpty(this.upBodyContentType) ? "text/plain" : this.upBodyContentType;
 		Debug.Log ("content-type:"+contentType);
+
 		obj.UploadBody(contentType, mem, (KiiObject obj2, Exception e) =>
 		{
 			ButtonEnabled = true;
@@ -228,9 +229,9 @@ public class ObjectBodyPage : BasePage, IPage
 			}
 			message = "Upload body is succeeded.";
 		},
-		(KiiObject obj3, long doneByte, long totalByte) => 
+		(KiiObject obj3, float progressPercentage) =>
 		{
-			this.content = String.Format("{0} / {1}", doneByte, totalByte);
+			this.content = String.Format("{0} %", progressPercentage*100);
 			Debug.Log(this.content);
 		});
 	}
@@ -258,9 +259,9 @@ public class ObjectBodyPage : BasePage, IPage
 			s.Close();
 			message = "Download body Succeeded";
 		},
-		(KiiObject obj3, long doneByte, long totalByte) => 
+		(KiiObject obj3, float progressPercentage) =>
 		{
-			this.content = String.Format("{0} / {1}", doneByte, totalByte);
+			this.content = String.Format("{0} %", progressPercentage*100);
 			Debug.Log(this.content);
 		});
 	}
