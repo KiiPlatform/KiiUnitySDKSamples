@@ -129,9 +129,20 @@ public class BucketPage : BasePage, IPage
 		KiiServerCodeEntryArgument args = KiiServerCodeEntryArgument.NewArgument(rawArgs);
 		
 		KiiServerCodeEntry entry = Kii.ServerCodeEntry("sum");
-		KiiServerCodeExecResult result = entry.Execute(args);
-		JsonObject resultJson = result.ReturnedValue;
-		message = resultJson.GetString("returnedValue");
+
+		entry.Execute(args,(KiiServerCodeEntry en, KiiServerCodeEntryArgument argument, KiiServerCodeExecResult execResult, Exception e) => 
+		{
+			buttonEnable = true;
+			if (e != null)
+			{
+				message = "Failed to execute server code " + e.ToString();
+				return;
+			}
+			JsonObject resultJson = execResult.ReturnedValue;
+			message = resultJson.GetString("returnedValue");
+		});
+
+
 	}
 
 	void PerformCreate ()
