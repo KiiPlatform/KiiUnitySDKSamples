@@ -388,7 +388,7 @@ public class Push2User : MonoBehaviour
         }
         KiiPushMessageData data = new KiiPushMessageData ();
         data.Put ("payload", this.payload);
-        data.Put ("msg", "this message is sent from unity!!");
+        data.Put ("msg", "unity!!");
         KiiPushMessage message = pushSetting.GetKiiPushMessage (data, apnsSetting, gcmSetting);
         KiiTopic topic = KiiUser.CurrentUser.Topic (TOPIC_NAME);
         topic.SendMessage (message, (KiiPushMessage target, Exception e) => {
