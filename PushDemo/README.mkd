@@ -1,0 +1,47 @@
+# PushDemo
+
+This is the sample application for push notification with KiiCloudSDK for Unity. 
+You can test two-type push notification on your iOS/Android device using by this application.
+
+- Push to App (Push2App scene)
+- Push to User (Push2User scene)
+
+## How to configure
+
+You can run this application on your device without any modification.
+
+If you want to use your Application ID, Application Key and Site, please check following tips.
+
+### Initialize Kii client
+
+#### version 1.8.0 or above
+
+Configure Application ID, Application Key and Site by KiiInitializeBehavior on each scenes.
+
+- Open Push2App/Push2User scene
+- Click KiiInitializer GameObject
+- Edit Application ID, Application Key and Site in the GameObject's property
+
+For details, please refer to the following guides.
+http://documentation.kii.com/en/guides/unity/quickstart/adding-kii-cloud-sdk-to-your-application/
+
+#### version 1.7.0 or below
+
+Configure Application ID, Application Key and Site with `Kii.Initialize` on `Awake` each scenes.
+Sample code is as follows.
+
+```
+void Awake ()
+{
+    Kii.Initialize ("f39c2d34", "2e98ef0bb78a58da92f9ac0709dc99ed", Kii.Site.JP);
+}
+```
+
+### Configure GCM/APNs
+
+You are required to set up your application to work with GCM/APNs.
+Before you start sending pushes, you'll need to set up your application (e.g. creating SSL Certificate and Keys) as follows.
+
+- GCM : http://documentation.kii.com/en/guides/android/quickstart/adding-kii-push-notification-to-your-application/
+- APNs : http://documentation.kii.com/en/guides/ios/quickstart/adding-kii-push-notification-to-your-application/
+
