@@ -7,7 +7,7 @@ using System.Collections;
 public class Push2User : MonoBehaviour {
 
 	private string payload = "";
-	private string message = "";
+    private string message = "--- Logs will show here ---";
 	private KiiPushPlugin kiiPushPlugin = null;
 	private static string USER_NAME = "noriyoshi" + Environment.TickCount;
 	private const string PASSWORD = "password";
@@ -268,7 +268,7 @@ public class Push2User : MonoBehaviour {
 			}
             if (gui.Button (160, 100, 160, 40, "Clear Log"))
 			{
-				this.message = "";
+                this.message = "--- Logs will show here ---";
 			}
             if (gui.Button (0, 140, 160, 40, "Register Push"))
 			{
@@ -361,7 +361,7 @@ public class Push2User : MonoBehaviour {
 				gcmScreen = true;
 			}
 			GUI.enabled = true;
-            gui.Label (5, 350, 310, 130, this.message, 10);
+            gui.TextArea (5, 350, 310, 130, this.message, 10);
 		}
 	}
 	public void OnPushNotificationsReceived(ReceivedMessage message)

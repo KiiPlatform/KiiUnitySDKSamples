@@ -7,7 +7,7 @@ using System.Collections;
 public class Push2App : MonoBehaviour {
 
 	private string payload = "";
-	private string message = "";
+    private string message = "--- Logs will show here ---";
 	private KiiPushPlugin kiiPushPlugin = null;
 	private static string USER_NAME = "noriyoshi" + Environment.TickCount;
 	private const string PASSWORD = "password";
@@ -170,7 +170,7 @@ public class Push2App : MonoBehaviour {
 		}
 		if (gui.Button (160, 100, 160, 50, "Clear Log"))
 		{
-			this.message = "";
+            this.message = "--- Logs will show here ---";
 		}
 		if (gui.Button (0, 150, 160, 50, "Register Push"))
 		{
@@ -237,7 +237,7 @@ public class Push2App : MonoBehaviour {
                 this.message = "#####Subscription status : " + isSubscribed;
             });
         }
-        gui.Label (5, 310, 310, 170, this.message, 10);
+        gui.TextArea (5, 310, 310, 170, this.message, 10);
 	}
 	private void ShowException(string msg, Exception e)
 	{

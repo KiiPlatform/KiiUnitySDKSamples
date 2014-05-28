@@ -67,6 +67,13 @@ public class ScalableGUI
 		return GUI.TextField (ScalableRect (x, y, width, height), text, style);
 	}
 
+    public string TextArea (float x, float y, float width, float height, string text, float fontSize = 14)
+    {
+        GUIStyle style = new GUIStyle (GUI.skin.textField);
+        style.fontSize = (int)(fontSize * _scale);
+        return GUI.TextArea (ScalableRect (x, y, width, height), text, style);
+    }
+
 	public bool Toggle (float x, float y, float width, float height, bool value, string text, float fontSize = 14)
 	{
 		GUIStyle labelStyle = new GUIStyle (GUI.skin.label);
