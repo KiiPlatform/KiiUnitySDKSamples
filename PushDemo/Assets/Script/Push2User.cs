@@ -262,19 +262,19 @@ public class Push2User : MonoBehaviour {
 
 			this.payload = gui.TextField (0, 45, 320, 50, this.payload);
 
-			if (gui.Button (0, 100, 160, 50, "Send Message"))
+            if (gui.Button (0, 100, 160, 40, "Send Message"))
 			{
 				sendMessage ();
 			}
-			if (gui.Button (160, 100, 160, 50, "Clear Log"))
+            if (gui.Button (160, 100, 160, 40, "Clear Log"))
 			{
 				this.message = "";
 			}
-			if (gui.Button (0, 150, 160, 50, "Register Push"))
+            if (gui.Button (0, 140, 160, 40, "Register Push"))
 			{
 				Invoke ("registerPush", 0);
 			}
-			if (gui.Button (160, 150, 160, 50, "Unregister Push"))
+            if (gui.Button (160, 140, 160, 40, "Unregister Push"))
 			{
 				this.kiiPushPlugin.UnregisterPush ((Exception e) => {
 					if (e != null)
@@ -287,31 +287,81 @@ public class Push2User : MonoBehaviour {
 					this.message = "#####Unregister push is successful!!";
 				});
 			}
-			if (gui.Button (160, 200, 160, 50, "Push settings >>"))
+            if (gui.Button (0, 180, 160, 40, "Subscribe topic"))
+            {
+                KiiUser user = KiiUser.CurrentUser;
+                KiiTopic topic = user.Topic(TOPIC_NAME);
+                KiiPushSubscription subscription = user.PushSubscription;
+                subscription.Subscribe(topic, (KiiSubscribable target, Exception e) => {
+                    if (e != null)
+                    {
+                        Debug.Log ("#####" + e.Message);
+                        Debug.Log ("#####" + e.StackTrace);
+                        this.ShowException("#####Subscribe is failed!!", e);
+                        return;
+                    }
+                    this.message = "#####Subscribe is successful!!";
+                });
+            }
+            if (gui.Button (160, 180, 160, 40, "Unsubscribe topic"))
+            {
+                KiiUser user = KiiUser.CurrentUser;
+                KiiTopic topic = user.Topic(TOPIC_NAME);
+                KiiPushSubscription subscription = user.PushSubscription;
+                subscription.Unsubscribe(topic, (KiiSubscribable target, Exception e) => {
+                    if (e != null)
+                    {
+                        Debug.Log ("#####" + e.Message);
+                        Debug.Log ("#####" + e.StackTrace);
+                        this.ShowException("#####Unsubscribe is failed!!", e);
+                        return;
+                    }
+                    this.message = "#####Unsubscribe is successful!!";
+                });
+            }
+            if (gui.Button (0, 220, 160, 40, "Check subscription"))
+            {
+                KiiUser user = KiiUser.CurrentUser;
+                KiiTopic topic = user.Topic(TOPIC_NAME);
+                KiiPushSubscription subscription = user.PushSubscription;
+                subscription.IsSubscribed(topic, (KiiSubscribable target, bool isSubscribed, Exception e) => {
+                    if (e != null)
+                    {
+                        Debug.Log ("#####" + e.Message);
+                        Debug.Log ("#####" + e.StackTrace);
+                        this.ShowException("#####Check subscription is failed!!", e);
+                        return;
+                    }
+                    this.message = "#####Subscription status : " + isSubscribed;
+                });
+            }
+
+
+            if (gui.Button (160, 220, 160, 40, "Push settings >>"))
 			{
 				pushScreen = true;
 			}
-			if (gui.Toggle (0, 250, 160, 50, apnsSetting.Enable, "Enable APNs"))
+            if (gui.Toggle (0, 260, 160, 40, apnsSetting.Enable, "Enable APNs"))
 			{
 				apnsSetting.Enable = !apnsSetting.Enable;
 			}
 			GUI.enabled = apnsSetting.Enable;
-			if (gui.Button (160, 250, 160, 50, "APNs settings >>"))
+            if (gui.Button (160, 260, 160, 40, "APNs settings >>"))
 			{
 				apnsScreen = true;
 			}
 			GUI.enabled = true;
-			if (gui.Toggle (0, 300, 160, 50, gcmSetting.Enable, "Enable GCM"))
+            if (gui.Toggle (0, 300, 160, 40, gcmSetting.Enable, "Enable GCM"))
 			{
 				gcmSetting.Enable = !gcmSetting.Enable;
 			}
 			GUI.enabled = gcmSetting.Enable;
-			if (gui.Button (160, 300, 160, 50, "GCM settings >>"))
+            if (gui.Button (160, 300, 160, 40, "GCM settings >>"))
 			{
 				gcmScreen = true;
 			}
 			GUI.enabled = true;
-			gui.Label (5, 360, 310, 120, this.message, 10);
+            gui.Label (5, 350, 310, 130, this.message, 10);
 		}
 	}
 	public void OnPushNotificationsReceived(ReceivedMessage message)
