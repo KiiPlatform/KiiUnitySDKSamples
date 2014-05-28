@@ -13,13 +13,19 @@ using KiiCorp.Cloud.Storage;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using JsonOrg;
 
 public class BucketPage : BasePage, IPage
 {
 	private KiiBucket bucket;
+	private KiiGroup group;
+	private string bucketName;
 
 	// query
 	private Rect queryButtonRect = new Rect(0, 128, 320, 64);
+
+	// query by server code
+	private Rect queryByServerCodeButtonRect = new Rect(320, 128, 320, 64);
 
 	// Create object
 	private Rect createButtonRect = new Rect(0, 192, 320, 64);
@@ -30,9 +36,11 @@ public class BucketPage : BasePage, IPage
 	private bool buttonEnable = true;
 	private IList<KiiObject> objectList = new List<KiiObject>();
 
-	public BucketPage (MainCamera camera, KiiBucket bucket) : base(camera)
+	public BucketPage (MainCamera camera, KiiGroup group, string  bucketName) : base(camera)
 	{
-		this.bucket = bucket;
+		this.group = group;
+		this.bucketName = bucketName;
+		this.bucket = group.Bucket(bucketName);
 	}
 
 	#region IPage implementation
@@ -43,6 +51,7 @@ public class BucketPage : BasePage, IPage
 		GUI.enabled = buttonEnable;
 		bool backClicked = GUI.Button(backButtonRect, "<");
 		bool queryClicked = GUI.Button(queryButtonRect, "Query");
+		bool queryByServerCodeClicked = GUI.Button(queryByServerCodeButtonRect, "QueryByServerCode");
 		bool createClicked = GUI.Button(createButtonRect, "Create");
 		bool deleteClicked = GUI.Button(deleteButtonRect, "Delete");
 		for (int i = 0 ; i < objectList.Count ; ++i)
@@ -70,6 +79,11 @@ public class BucketPage : BasePage, IPage
 		if (queryClicked)
 		{
 			PerformQuery();
+			return;
+		}
+		if (queryByServerCodeClicked)
+		{
+			PerformQueryByServerCode();
 			return;
 		}
 		if (createClicked)
@@ -103,12 +117,32 @@ public class BucketPage : BasePage, IPage
 		});
 	}
 
+	void PerformQueryByServerCode ()
+	{
+		message = "QueryByServerCode...";
+		ButtonEnabled = false;
+		
+		JsonObject rawArgs = new JsonObject();
+		rawArgs.Put("baseUrl", Kii.BaseUrl);
+		rawArgs.Put("groupUri",group.Uri.ToString());
+		rawArgs.Put("bucketName", bucketName);
+		KiiServerCodeEntryArgument args = KiiServerCodeEntryArgument.NewArgument(rawArgs);
+		
+		KiiServerCodeEntry entry = Kii.ServerCodeEntry("sum");
+		KiiServerCodeExecResult result = entry.Execute(args);
+		JsonObject resultJson = result.ReturnedValue;
+		message = resultJson.GetString("returnedValue");
+	}
+
 	void PerformCreate ()
 	{
 		message = "Creating object...";
 		ButtonEnabled = false;
 
-		bucket.NewKiiObject().Save((KiiObject obj, Exception e) =>
+		KiiObject kiiObject = bucket.NewKiiObject();
+		kiiObject["score"] = new System.Random().Next(99);
+		
+		kiiObject.Save((KiiObject obj, Exception e) =>
 		{
 			buttonEnable = true;
 			if (e != null)
