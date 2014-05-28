@@ -9,7 +9,7 @@ public class Push2App : MonoBehaviour
     private string payload = "";
     private string message = "--- Logs will show here ---";
     private KiiPushPlugin kiiPushPlugin = null;
-    private static string USER_NAME = "noriyoshi" + Environment.TickCount;
+    private static string USER_NAME = "unitypushdemo" + Environment.TickCount;
     private const string PASSWORD = "password";
     private static string BUCKET_NAME = "userbucket";
     private KiiPushPlugin.KiiPushMessageReceivedCallback receivedCallback;

@@ -9,7 +9,7 @@ public class Push2User : MonoBehaviour
     private string payload = "";
     private string message = "--- Logs will show here ---";
     private KiiPushPlugin kiiPushPlugin = null;
-    private static string USER_NAME = "noriyoshi" + Environment.TickCount;
+    private static string USER_NAME = "unitypushdemo" + Environment.TickCount;
     private const string PASSWORD = "password";
     private static string TOPIC_NAME = "my_box";
     private KiiPushPlugin.KiiPushMessageReceivedCallback receivedCallback = null;
