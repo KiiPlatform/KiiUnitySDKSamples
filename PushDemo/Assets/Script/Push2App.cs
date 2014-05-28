@@ -11,7 +11,7 @@ public class Push2App : MonoBehaviour {
 	private KiiPushPlugin kiiPushPlugin = null;
 	private static string USER_NAME = "noriyoshi" + Environment.TickCount;
 	private const string PASSWORD = "password";
-	private static string BUCKET_NAME = "app_bucket";
+    private static string BUCKET_NAME = "userbucket";
 	private KiiPushPlugin.KiiPushMessageReceivedCallback receivedCallback;
 	
 	void Awake()
@@ -189,7 +189,55 @@ public class Push2App : MonoBehaviour {
 				this.message = "#####Unregister push is successful!!";
 			});
 		}
-		gui.Label (5, 210, 310, 270, this.message, 10);
+        if (gui.Button (0, 200, 160, 50, "Subscribe bucket"))
+        {
+            KiiUser user = KiiUser.CurrentUser;
+            KiiBucket bucket = user.Bucket(BUCKET_NAME);
+            KiiPushSubscription subscription = user.PushSubscription;
+            subscription.Subscribe(bucket, (KiiSubscribable target, Exception e) => {
+                if (e != null)
+                {
+                    Debug.Log ("#####" + e.Message);
+                    Debug.Log ("#####" + e.StackTrace);
+                    this.ShowException("#####Subscribe is failed!!", e);
+                    return;
+                }
+                this.message = "#####Subscribe is successful!!";
+            });
+        }
+        if (gui.Button (160, 200, 160, 50, "Unsubscribe bucket"))
+        {
+            KiiUser user = KiiUser.CurrentUser;
+            KiiBucket bucket = user.Bucket(BUCKET_NAME);
+            KiiPushSubscription subscription = user.PushSubscription;
+            subscription.Unsubscribe(bucket, (KiiSubscribable target, Exception e) => {
+                if (e != null)
+                {
+                    Debug.Log ("#####" + e.Message);
+                    Debug.Log ("#####" + e.StackTrace);
+                    this.ShowException("#####Unsubscribe is failed!!", e);
+                    return;
+                }
+                this.message = "#####Unsubscribe is successful!!";
+            });
+        }
+        if (gui.Button (0, 250, 160, 50, "Check subscription"))
+        {
+            KiiUser user = KiiUser.CurrentUser;
+            KiiBucket bucket = user.Bucket(BUCKET_NAME);
+            KiiPushSubscription subscription = user.PushSubscription;
+            subscription.IsSubscribed(bucket, (KiiSubscribable target, bool isSubscribed, Exception e) => {
+                if (e != null)
+                {
+                    Debug.Log ("#####" + e.Message);
+                    Debug.Log ("#####" + e.StackTrace);
+                    this.ShowException("#####Check subscription is failed!!", e);
+                    return;
+                }
+                this.message = "#####Subscription status : " + isSubscribed;
+            });
+        }
+        gui.Label (5, 310, 310, 170, this.message, 10);
 	}
 	private void ShowException(string msg, Exception e)
 	{
