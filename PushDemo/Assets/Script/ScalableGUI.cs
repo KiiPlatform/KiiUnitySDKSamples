@@ -16,14 +16,17 @@ public class ScalableGUI
         float scale = window_aspect / target_aspect;
 
         Rect _rect = new Rect (0.0f, 0.0f, 1.0f, 1.0f);
-        if (1.0f > scale) {
+        if (1.0f > scale)
+        {
             _rect.x = 0;
             _rect.width = 1.0f;
             _rect.y = (1.0f - scale) / 2.0f;
             _rect.height = scale;
 
             _scale = (float)Screen.width / width;
-        } else {
+        }
+        else
+        {
             scale = 1.0f / scale;
             _rect.x = (1.0f - scale) / 2.0f;
             _rect.width = scale;
@@ -80,7 +83,8 @@ public class ScalableGUI
         GUI.Label (ScalableRect (x + height + labelLeftMargin, y, width - height - labelLeftMargin, height), text, labelStyle);
 
         string check = "";
-        if (value) {
+        if (value)
+        {
             check = "x";
         }
         GUIStyle style = new GUIStyle (GUI.skin.button);
