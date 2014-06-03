@@ -13,13 +13,19 @@ using KiiCorp.Cloud.Storage;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using JsonOrg;
 
 public class BucketPage : BasePage, IPage
 {
 	private KiiBucket bucket;
+	private KiiGroup group;
+	private string bucketName;
 
 	// query
 	private Rect queryButtonRect = new Rect(0, 128, 320, 64);
+
+	// query by server code
+	private Rect queryByServerCodeButtonRect = new Rect(320, 128, 320, 64);
 
 	// Create object
 	private Rect createButtonRect = new Rect(0, 192, 320, 64);
@@ -27,12 +33,18 @@ public class BucketPage : BasePage, IPage
 	// Delete bucket
 	private Rect deleteButtonRect = new Rect(320, 192, 320, 64);
 
+	// count query
+	private Rect countAllButtonRect = new Rect(0, 256, 320, 64);
+	private Rect countWithQueryButtonRect = new Rect(320, 256, 320, 64);
+
 	private bool buttonEnable = true;
 	private IList<KiiObject> objectList = new List<KiiObject>();
 
-	public BucketPage (MainCamera camera, KiiBucket bucket) : base(camera)
+	public BucketPage (MainCamera camera, KiiGroup group, string  bucketName) : base(camera)
 	{
-		this.bucket = bucket;
+		this.group = group;
+		this.bucketName = bucketName;
+		this.bucket = group.Bucket(bucketName);
 	}
 
 	#region IPage implementation
@@ -43,8 +55,11 @@ public class BucketPage : BasePage, IPage
 		GUI.enabled = buttonEnable;
 		bool backClicked = GUI.Button(backButtonRect, "<");
 		bool queryClicked = GUI.Button(queryButtonRect, "Query");
+		bool queryByServerCodeClicked = GUI.Button(queryByServerCodeButtonRect, "QueryByServerCode");
 		bool createClicked = GUI.Button(createButtonRect, "Create");
 		bool deleteClicked = GUI.Button(deleteButtonRect, "Delete");
+		bool countAllClicked = GUI.Button(countAllButtonRect, "CountAll");
+		bool countQueryClicked = GUI.Button(countWithQueryButtonRect, "CountWithQuery");
 		for (int i = 0 ; i < objectList.Count ; ++i)
 		{
 			Uri uri = objectList[i].Uri;
@@ -52,7 +67,7 @@ public class BucketPage : BasePage, IPage
 			{
 				continue;
 			}
-			if (GUI.Button(new Rect(0, i * 64 + 256, 640, 64), uri.ToString()))
+			if (GUI.Button(new Rect(0, i * 64 + 320, 640, 64), uri.ToString()))
 			{
 				// object page
 				ShowObjectPage(objectList[i]);
@@ -72,6 +87,11 @@ public class BucketPage : BasePage, IPage
 			PerformQuery();
 			return;
 		}
+		if (queryByServerCodeClicked)
+		{
+			PerformQueryByServerCode();
+			return;
+		}
 		if (createClicked)
 		{
 			PerformCreate();
@@ -80,6 +100,16 @@ public class BucketPage : BasePage, IPage
 		if (deleteClicked)
 		{
 			PerformDelete();
+			return;
+		}
+		if (countQueryClicked)
+		{
+			PerformCountWithQuery();
+			return;
+		}
+		if (countAllClicked)
+		{
+			PerformCountAll();
 			return;
 		}
 	}
@@ -103,12 +133,75 @@ public class BucketPage : BasePage, IPage
 		});
 	}
 
+	void PerformQueryByServerCode ()
+	{
+		message = "QueryByServerCode...";
+		ButtonEnabled = false;
+		
+		JsonObject rawArgs = new JsonObject();
+		rawArgs.Put("baseUrl", Kii.BaseUrl);
+		rawArgs.Put("groupUri",group.Uri.ToString());
+		rawArgs.Put("bucketName", bucketName);
+		KiiServerCodeEntryArgument args = KiiServerCodeEntryArgument.NewArgument(rawArgs);
+		
+		KiiServerCodeEntry entry = Kii.ServerCodeEntry("sum");
+
+		entry.Execute(args,(KiiServerCodeEntry en, KiiServerCodeEntryArgument argument, KiiServerCodeExecResult execResult, Exception e) => 
+		{
+			buttonEnable = true;
+			if (e != null)
+			{
+				message = "Failed to execute server code " + e.ToString();
+				return;
+			}
+			JsonObject resultJson = execResult.ReturnedValue;
+			message = resultJson.GetString("returnedValue");
+		});
+
+
+	}
+
+	void PerformCountAll ()
+	{
+		message = "Counting all objects...";
+		ButtonEnabled = false;
+
+		bucket.Count((KiiBucket b, KiiQuery q, int count, Exception e) => {
+			if (e != null)
+			{
+				message = "Execution failed : " + e.ToString();
+				return;
+			}
+			message = string.Format("Number of objects : {0}", count);
+		});
+	}
+
+	void PerformCountWithQuery ()
+	{
+		message = "Counting with query...";
+		ButtonEnabled = false;
+
+		KiiClause clause = KiiClause.GreaterThan("score", 50);
+		KiiQuery query = new KiiQuery(clause);
+		bucket.Count(query, (KiiBucket b, KiiQuery q, int count, Exception e) => {
+			if (e != null)
+			{
+				message = "Execution failed : " + e.ToString();
+				return;
+			}
+			message = string.Format("Number of objects when 'score' > 50 : {1}", clause.ToString(), count);
+		});
+	}
+
 	void PerformCreate ()
 	{
 		message = "Creating object...";
 		ButtonEnabled = false;
 
-		bucket.NewKiiObject().Save((KiiObject obj, Exception e) =>
+		KiiObject kiiObject = bucket.NewKiiObject();
+		kiiObject["score"] = new System.Random().Next(99);
+		
+		kiiObject.Save((KiiObject obj, Exception e) =>
 		{
 			buttonEnable = true;
 			if (e != null)

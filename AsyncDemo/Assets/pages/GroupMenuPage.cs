@@ -193,7 +193,7 @@ public class GroupMenuPage : BasePage, IPage
 	
 	void ShowBucket (string bucketName)
 	{
-		camera.PushPage(new BucketPage(camera, currentGroup.Bucket(bucketName)));
+		camera.PushPage(new BucketPage(camera, currentGroup, bucketName));
 	}
 	
 	void PerformAddUser (string username)
