@@ -18,8 +18,7 @@ public class Main : MonoBehaviour {
 	private Variation appliedVariation;
 
 	void Start () {
-//		Kii.Initialize ("085c7201", "84868757e531e11d088a5bf61589fa13", "http://qa21.internal.kii.com/api");
-//		KiiAnalytics.Initialize ("085c7201", "84868757e531e11d088a5bf61589fa13", "http://qa21.internal.kii.com/api", GetDeviceID());
+//		Kii.Initialize ("a665e5b1", "84868757e531e11d088a5bf61589fa13", Kii.Site.JP);
 	}
 	
 	// Update is called once per frame
@@ -55,7 +54,7 @@ public class Main : MonoBehaviour {
 			{
 				this.initializedExperiment = true;
 				Debug.Log("#####Call KiiExperiment.GetByID");
-				KiiExperiment.GetByID ("8a835c5b-3508-41a9-9a7e-a348c513a426", (KiiExperiment experiment, Exception e)=>{
+				KiiExperiment.GetByID ("f1b00500-eae2-11e3-a0e4-22000a84b8f5", (KiiExperiment experiment, Exception e)=>{
 					Debug.Log("#####End KiiExperiment.GetByID");
 					if (e != null)
 					{
