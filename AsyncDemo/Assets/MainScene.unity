@@ -115,6 +115,7 @@ MonoBehaviour:
   AppID: 
   AppKey: 
   Site: 0
+  apiTimeout: 30
   ServerUrl: 
 --- !u!1 &1300140436
 GameObject:
