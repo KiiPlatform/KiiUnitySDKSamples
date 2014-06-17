@@ -109,12 +109,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 969888040}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -1327372794, guid: a19cdb581fff4407c93fe96041713925, type: 3}
+  m_Script: {fileID: 11500000, guid: 966331e1787e9439281c2a300ac802fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AppID: e8e2563e
-  AppKey: a084a2fe9957f78cc6aeae264000eb12
-  Site: 1
+  AppID: 
+  AppKey: 
+  Site: 0
+  apiTimeout: 30
   ServerUrl: 
 --- !u!1 &1300140436
 GameObject:
