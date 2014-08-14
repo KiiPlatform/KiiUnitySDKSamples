@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 using KiiCorp.Cloud.Storage;
 using System;
 using System.Collections;
@@ -143,7 +143,7 @@ namespace KiiCorp.Cloud.Unity
 			Debug.Log ("#####KiiPush Device Token :" + deviceToken);
 			this.callback (deviceToken, null);
 		}
-		void onDidFailToRegisterForRemoteNotificationsWithError(string error)
+		void OnDidFailToRegisterForRemoteNotificationsWithError(string error)
 		{
 			this.callback (null, new Exception(error));
 		}
@@ -169,12 +169,13 @@ namespace KiiCorp.Cloud.Unity
 					return;
 				}
 				using(var pluginClass = new AndroidJavaClass("com.kii.cloud.unity.KiiPushUnityPlugin"))
-					kiiPush = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
+				kiiPush = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
 				
 				kiiPush.Call("setListenerGameObjectName", this.gameObject.name);
 				kiiPush.Call("setSenderId", this.SenderID);
-			}
-			catch (Exception e)
+                Debug.Log("#####SenderID: " + this.SenderID);
+            }
+            catch (Exception e)
 			{
 				Debug.Log("#####failed to initialize KiiPushReceiver");
 				Debug.Log(e.Message);
@@ -265,6 +266,20 @@ namespace KiiCorp.Cloud.Unity
 		}
 		#endif
 
+		#if UNITY_ANDROID
+		public string GetLastMessage()
+		{
+			if (kiiPush != null)
+				return kiiPush.Call<string>("getLastMessage");
+			else
+				return null;
+		}
+		#else
+		public string GetLastMessage()
+		{
+			return null;
+		}
+		#endif
 		
 		/// <summary>
 		/// This method is called by the unity native plugin when received push message.

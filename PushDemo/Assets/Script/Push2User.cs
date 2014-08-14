@@ -7,9 +7,9 @@ using System.Collections;
 public class Push2User : MonoBehaviour
 {
     private string payload = "";
-    private string message = "--- Logs will show here ---";
+    private string message = "--- Logs will show here ---\n";
     private KiiPushPlugin kiiPushPlugin = null;
-    private static string USER_NAME = "unitypushdemo" + Environment.TickCount;
+    private static string USER_NAME = "unitypushdemo";
     private const string PASSWORD = "password";
     private static string TOPIC_NAME = "my_box";
     private KiiPushPlugin.KiiPushMessageReceivedCallback receivedCallback = null;
@@ -29,6 +29,13 @@ public class Push2User : MonoBehaviour
     {
         Debug.Log ("#####Main.Start");
         this.kiiPushPlugin = GameObject.Find ("KiiPushPlugin").GetComponent<KiiPushPlugin> ();
+        // Check message while app was not running.
+        string pmessage = this.kiiPushPlugin.GetLastMessage();
+        if (!String.IsNullOrEmpty(pmessage))
+        {
+            this.message += "#####PushNotification Received While App was not running." + "\n";
+            this.message += "#####Contents=" + pmessage + "\n";
+        }
 
         this.receivedCallback = (ReceivedMessage message) => {
             switch (message.PushMessageType)
@@ -95,6 +102,7 @@ public class Push2User : MonoBehaviour
         KiiPushInstallation.DeviceType deviceType = KiiPushInstallation.DeviceType.ANDROID;
         #endif
 
+		Debug.Log("User: " + KiiUser.CurrentUser.Uri);
         if (this.kiiPushPlugin == null)
         {
             Debug.Log ("#####failed to find KiiPushPlugin");
@@ -104,11 +112,11 @@ public class Push2User : MonoBehaviour
             if (e0 != null)
             {
                 Debug.Log ("#####failed to RegisterPush");
-                this.message = "#####failed to RegisterPush : " + pushToken;
+                this.message += "#####failed to RegisterPush : " + pushToken;
                 return;
             }
             Debug.Log ("#####RegistrationId=" + pushToken);
-            this.message = "Token : " + pushToken + "\n";
+            this.message += "Token : " + pushToken + "\n";
             Debug.Log ("#####Install");
             KiiUser.PushInstallation (true).Install (pushToken, deviceType, (Exception e3) => {
                 if (e3 != null)
@@ -168,7 +176,7 @@ public class Push2User : MonoBehaviour
     {
         Debug.Log ("#####" + e.Message);
         Debug.Log ("#####" + e.StackTrace);
-        this.message = "#####ERROR: " + msg + "   type=" + e.GetType () + "\n";
+        this.message += "#####ERROR: " + msg + "   type=" + e.GetType () + "\n";
         if (e.InnerException != null)
         {
             this.message += "#####InnerExcepton=" + e.InnerException.GetType () + "\n";
@@ -272,7 +280,7 @@ public class Push2User : MonoBehaviour
             }
             if (gui.Button (160, 100, 160, 40, "Clear Log"))
             {
-                this.message = "--- Logs will show here ---";
+                this.message = "--- Logs will show here ---\n";
             }
             if (gui.Button (0, 140, 160, 40, "Register Push"))
             {
@@ -288,7 +296,7 @@ public class Push2User : MonoBehaviour
                         this.ShowException ("#####Unregister push is failed!!", e);
                         return;
                     }
-                    this.message = "#####Unregister push is successful!!";
+                    this.message += "#####Unregister push is successful!!";
                 });
             }
             if (gui.Button (0, 180, 160, 40, "Subscribe topic"))
@@ -304,7 +312,7 @@ public class Push2User : MonoBehaviour
                         this.ShowException ("#####Subscribe is failed!!", e);
                         return;
                     }
-                    this.message = "#####Subscribe is successful!!";
+                    this.message += "#####Subscribe is successful!!";
                 });
             }
             if (gui.Button (160, 180, 160, 40, "Unsubscribe topic"))
@@ -320,7 +328,7 @@ public class Push2User : MonoBehaviour
                         this.ShowException ("#####Unsubscribe is failed!!", e);
                         return;
                     }
-                    this.message = "#####Unsubscribe is successful!!";
+                    this.message += "#####Unsubscribe is successful!!";
                 });
             }
             if (gui.Button (0, 220, 160, 40, "Check subscription"))
@@ -336,7 +344,7 @@ public class Push2User : MonoBehaviour
                         this.ShowException ("#####Check subscription is failed!!", e);
                         return;
                     }
-                    this.message = "#####Subscription status : " + isSubscribed;
+                    this.message += "#####Subscription status : " + isSubscribed;
                 });
             }
 
@@ -371,7 +379,7 @@ public class Push2User : MonoBehaviour
 
     public void OnPushNotificationsReceived (ReceivedMessage message)
     {
-        this.message = "#####PushNotification Received" + "\n";
+        this.message += "#####PushNotification Received" + "\n";
         this.message += "#####Type=" + message.PushMessageType + "\n";
         this.message += "#####Sender=" + message.Sender + "\n";
         this.message += "#####Scope=" + message.ObjectScope + "\n";
@@ -383,7 +391,7 @@ public class Push2User : MonoBehaviour
     {
         if (KiiUser.CurrentUser == null)
         {
-            this.message = "#####KiiUser is not logged in!";
+            this.message += "#####KiiUser is not logged in!";
             return;
         }
         KiiPushMessageData data = new KiiPushMessageData ();
@@ -399,7 +407,7 @@ public class Push2User : MonoBehaviour
                 this.ShowException ("Failed to send message", e);
                 return;
             }
-            this.message = "#####sending message is successful!!";
+            this.message += "#####sending message is successful!!";
         });
     }
 

@@ -7,9 +7,9 @@ using System.Collections;
 public class Push2App : MonoBehaviour
 {
     private string payload = "";
-    private string message = "--- Logs will show here ---";
+    private string message = "--- Logs will show here ---\n";
     private KiiPushPlugin kiiPushPlugin = null;
-    private static string USER_NAME = "unitypushdemo" + Environment.TickCount;
+    private static string USER_NAME = "unitypushdemo";
     private const string PASSWORD = "password";
     private static string BUCKET_NAME = "userbucket";
     private KiiPushPlugin.KiiPushMessageReceivedCallback receivedCallback;
@@ -23,6 +23,13 @@ public class Push2App : MonoBehaviour
     {
         Debug.Log ("#####Main.Start");
         this.kiiPushPlugin = GameObject.Find ("KiiPushPlugin").GetComponent<KiiPushPlugin> ();
+        // Check message while app was not running.
+        string pmessage = this.kiiPushPlugin.GetLastMessage();
+        if (!String.IsNullOrEmpty(pmessage))
+        {
+            this.message += "#####PushNotification Received While App was not running." + "\n";
+            this.message += "#####Contents=" + pmessage + "\n";
+        }
 
         this.receivedCallback = (ReceivedMessage message) => {
             switch (message.PushMessageType)
@@ -94,12 +101,12 @@ public class Push2App : MonoBehaviour
             if (e0 != null)
             {
                 Debug.Log ("#####failed to RegisterPush");
-                this.message = "#####failed to RegisterPush : " + pushToken;
+                this.message += "#####failed to RegisterPush : " + pushToken;
                 return;
             }
 
             Debug.Log ("#####RegistrationId=" + pushToken);
-            this.message = "Token : " + pushToken + "\n";
+            this.message += "Token : " + pushToken + "\n";
             Debug.Log ("#####Install");
             KiiUser.PushInstallation (true).Install (pushToken, deviceType, (Exception e3) => {
                 if (e3 != null)
@@ -167,12 +174,12 @@ public class Push2App : MonoBehaviour
                     this.ShowException ("Failed to save object", e);
                     return;
                 }
-                this.message = "#####creating object is successful!!";
+                this.message += "#####creating object is successful!!";
             });
         }
         if (gui.Button (160, 100, 160, 50, "Clear Log"))
         {
-            this.message = "--- Logs will show here ---";
+            this.message = "--- Logs will show here ---\n";
         }
         if (gui.Button (0, 150, 160, 50, "Register Push"))
         {
@@ -188,7 +195,7 @@ public class Push2App : MonoBehaviour
                     this.ShowException ("#####Unregister push is failed!!", e);
                     return;
                 }
-                this.message = "#####Unregister push is successful!!";
+                this.message += "#####Unregister push is successful!!";
             });
         }
         if (gui.Button (0, 200, 160, 50, "Subscribe bucket"))
@@ -204,7 +211,7 @@ public class Push2App : MonoBehaviour
                     this.ShowException ("#####Subscribe is failed!!", e);
                     return;
                 }
-                this.message = "#####Subscribe is successful!!";
+                this.message += "#####Subscribe is successful!!";
             });
         }
         if (gui.Button (160, 200, 160, 50, "Unsubscribe bucket"))
@@ -220,7 +227,7 @@ public class Push2App : MonoBehaviour
                     this.ShowException ("#####Unsubscribe is failed!!", e);
                     return;
                 }
-                this.message = "#####Unsubscribe is successful!!";
+                this.message += "#####Unsubscribe is successful!!";
             });
         }
         if (gui.Button (0, 250, 160, 50, "Check subscription"))
@@ -236,7 +243,7 @@ public class Push2App : MonoBehaviour
                     this.ShowException ("#####Check subscription is failed!!", e);
                     return;
                 }
-                this.message = "#####Subscription status : " + isSubscribed;
+                this.message += "#####Subscription status : " + isSubscribed;
             });
         }
         gui.TextArea (5, 310, 310, 170, this.message, 10);
@@ -246,7 +253,7 @@ public class Push2App : MonoBehaviour
     {
         Debug.Log ("#####" + e.Message);
         Debug.Log ("#####" + e.StackTrace);
-        this.message = "#####ERROR: " + msg + "   type=" + e.GetType () + "\n";
+        this.message += "#####ERROR: " + msg + "   type=" + e.GetType () + "\n";
         if (e.InnerException != null)
         {
             this.message += "#####InnerExcepton=" + e.InnerException.GetType () + "\n";
@@ -262,7 +269,7 @@ public class Push2App : MonoBehaviour
 
     public void OnPushNotificationsReceived (ReceivedMessage message)
     {
-        this.message = "#####PushNotification Received" + "\n";
+        this.message += "#####PushNotification Received" + "\n";
         this.message += "#####Type=" + message.PushMessageType + "\n";
         this.message += "#####Sender=" + message.Sender + "\n";
         this.message += "#####Scope=" + message.ObjectScope + "\n";
