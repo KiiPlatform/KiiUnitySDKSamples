@@ -34,6 +34,11 @@ public class TitlePage : IPage
 	// signup
 	private Rect signupButtonRect = new Rect(0, 256, 320, 64);
 
+	// expiresAt
+	private Rect expirationRect = new Rect(0, 320, 80, 64);
+	private Rect expirationBtnRect = new Rect(82, 320, 238, 64);
+	private string expiration = ""; 
+
 	private bool buttonEnable = true;
 
 	private bool menuButtonEnable = false;
@@ -43,6 +48,8 @@ public class TitlePage : IPage
 	private Rect changePageButtonRect = new Rect(320, 192, 320, 64);
 	private Rect findUserPageButtonRect = new Rect(320, 256, 320, 64);
 	private Rect groupPageButtonRect = new Rect(320, 320, 320, 64);
+
+
 
 	public TitlePage (MainCamera camera)
 	{
@@ -55,10 +62,12 @@ public class TitlePage : IPage
 		GUI.Label(messageRect, message);
 		username = GUI.TextField(usernameRect, username);
 		password = GUI.TextField(passwordTextRect, password);
+		expiration = GUI.TextField(expirationRect, expiration);
 
 		GUI.enabled = buttonEnable;
 		bool loginClicked = GUI.Button(loginButtonRect, "Login");
 		bool signupClicked = GUI.Button(signupButtonRect, "Signup");
+		bool expirationClicked = GUI.Button(expirationBtnRect, "TokenExpiration");
 		GUI.enabled = true;
 
 		if (loginClicked)
@@ -69,6 +78,16 @@ public class TitlePage : IPage
 		if (signupClicked)
 		{
 			PerformSignup(username, password);
+			return;
+		}
+
+		if(expirationClicked){
+			try {
+				Kii.AccessTokenExpiration = Convert.ToInt64(expiration);
+				message = "Access token expiration : "+Kii.AccessTokenExpiration;
+			} catch(FormatException e) {
+				message = e.Message;
+			}
 			return;
 		}
 
@@ -116,6 +135,7 @@ public class TitlePage : IPage
 				message = "Login failed " + e.ToString();
 				return;
 			}
+			Debug.Log("Token expiresAt : "+KiiUser.CurrentUser.GetAccessTokenDictionary()["expires_at"]);
 			message = "Login succeeded";
 			menuButtonEnable = true;
 		});
@@ -145,6 +165,7 @@ public class TitlePage : IPage
 				message = "Failed to signup " + e.ToString();
 				return;
 			}
+			Debug.Log("Token expiresAt : "+KiiUser.CurrentUser.GetAccessTokenDictionary()["expires_at"]);
 			message = "Signup succeeded";
 			menuButtonEnable = true;
 		});
