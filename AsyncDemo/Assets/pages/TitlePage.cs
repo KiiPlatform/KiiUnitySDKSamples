@@ -12,6 +12,7 @@ using KiiCorp.Cloud.Storage;
 
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class TitlePage : IPage
 {
@@ -44,6 +45,7 @@ public class TitlePage : IPage
 	private bool menuButtonEnable = false;
 
 	// menu buttons
+	private Rect tokenDictRect = new Rect(320, 64, 320, 64);
 	private Rect userPageButtonRect = new Rect(320, 128, 320, 64);
 	private Rect changePageButtonRect = new Rect(320, 192, 320, 64);
 	private Rect findUserPageButtonRect = new Rect(320, 256, 320, 64);
@@ -94,10 +96,20 @@ public class TitlePage : IPage
 		// menu button
 		if (!menuButtonEnable) { return; }
 
+		bool tokenDictClicked = GUI.Button(tokenDictRect, "Token Dictionary");
 		bool userPageClicked = GUI.Button(userPageButtonRect, "User API");
 		bool changePageClicked = GUI.Button(changePageButtonRect, "Change API");
 		bool findUserPageClicked = GUI.Button(findUserPageButtonRect, "Find User API");
 		bool groupPageClicked = GUI.Button(groupPageButtonRect, "Group API");
+
+		if (tokenDictClicked)
+		{
+			IDictionary<string,string> dict = KiiUser.CurrentUser.GetAccessTokenDictionary();
+			string token = dict["access_token"];
+			string expiresAt = dict["expires_at"];
+			message = "expires: "+expiresAt+" token: "+token;
+			return;
+		}
 
 		if (userPageClicked)
 		{
