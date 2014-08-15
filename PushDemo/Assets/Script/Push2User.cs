@@ -34,7 +34,10 @@ public class Push2User : MonoBehaviour
         if (!String.IsNullOrEmpty(pmessage))
         {
             this.message += "#####PushNotification Received While App was not running." + "\n";
-            this.message += "#####Contents=" + pmessage + "\n";
+//            this.message += "#####Contents=" + pmessage + "\n";
+            JsonOrg.JsonObject obj = new JsonOrg.JsonObject(pmessage);
+            string  url = obj.OptString("url", "error: failed to get url.");
+            this.message += "#####Url=" + url + "\n";
         }
 
         this.receivedCallback = (ReceivedMessage message) => {
