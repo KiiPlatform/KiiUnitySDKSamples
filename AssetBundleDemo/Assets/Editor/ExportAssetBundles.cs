@@ -6,10 +6,10 @@ using UnityEditor;
 
 public class ExportAssetBundles
 {
-    private const string APP_ID = "de54ae03";
-    private const string APP_KEY = "e91aa484541206147046aee4a16c463c";
-    private const string CLIENT_ID = "6063bfb75a5639be7251846897c17072";
-    private const string CLIENT_SECRET = "b72bd0f2c754dbede01fafc5abd0f06385402d22530d9ad718c25af2c302647d";
+    private const string APP_ID = "xxxxxx";
+    private const string APP_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    private const string CLIENT_ID = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    private const string CLIENT_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
     private const string SITE = "JP"; // US or JP or CN or SG
     private const string ASSET_BUNDLE_VERSION = "v1.0.0";
     private static Encoding enc = Encoding.GetEncoding("UTF-8");
@@ -45,7 +45,8 @@ public class ExportAssetBundles
             bundles.Add("Android", path + ".android.unity3d");
             bundles.Add("iOS", path + ".iphone.unity3d");
             bundles.Add("WebPlayer", path + ".unity3d");
-            UploadAssetBundles(bundles);
+            string id = UploadAssetBundles(bundles);
+            Debug.Log("AssetBundles uploaded!! id=" + id);
             Selection.objects = selection;
         }
     }
@@ -59,7 +60,7 @@ public class ExportAssetBundles
             string url = SaveObjectAndPublishObjectBody(token, platform, bundles[platform]);
             assetBundleInfo.AddField(platform, url);
         }
-        return SaveObject(token, assetBundleInfo);
+        return SaveObject(token, "AssetBundles", assetBundleInfo);
     }
     private static string GetAdminToken()
     {
@@ -75,7 +76,7 @@ public class ExportAssetBundles
         // Save the object
         JSONObject request = new JSONObject();
         request.AddField("platform", platform);
-        string objectID = SaveObject(token, request);
+        string objectID = SaveObject(token, "AssetBundleBin", request);
 
         // Uplaod the AssetBundle
         FileStream stream = null;
@@ -93,17 +94,17 @@ public class ExportAssetBundles
                 stream.Close();
             }
         }
-        SendRequestSync ("/apps/" + APP_ID + "/Asset/objects/" + objectID + "/body", "PUT", "application/vnd.unity", null, token, body);
+        SendRequestSync ("/apps/" + APP_ID + "/buckets/AssetBundleBin/objects/" + objectID + "/body", "PUT", "application/vnd.unity", null, token, body);
 
         // Publish the AssetBundle
-        string response = SendRequestSync ("/apps/" + APP_ID + "/Asset/objects/" + objectID + "/body/publish", "POST", "application/vnd.kii.objectbodypublicationrequest+json", "application/vnd.kii.objectbodypublicationresponse+json", token, (byte[])null);
+        string response = SendRequestSync ("/apps/" + APP_ID + "/buckets/AssetBundleBin/objects/" + objectID + "/body/publish", "POST", "application/vnd.kii.objectbodypublicationrequest+json", "application/vnd.kii.objectbodypublicationresponse+json", token, (byte[])null);
         JSONObject json = new JSONObject(response);
         return json.GetField("url").str;
     }
-    private static string SaveObject(string token, JSONObject body)
+    private static string SaveObject(string token, string bucket, JSONObject body)
     {
         // Save the object
-        string response = SendRequestSync ("/apps/" + APP_ID + "/Asset/objects", "POST", "application/vnd.unity+json", null, token, body.ToString());
+        string response = SendRequestSync ("/apps/" + APP_ID + "/buckets/" + bucket + "/objects", "POST", "application/vnd.unity+json", null, token, body.ToString());
         JSONObject json = new JSONObject(response);
         return json.GetField("objectID").str;
     }
@@ -129,6 +130,10 @@ public class ExportAssetBundles
         if (token != null)
         {
             headers.Add("Authorization", "Bearer " + token);
+        }
+        if (body == null)
+        {
+            body = GetBytes("{}");
         }
         LogCurl(method, url, headers, GetString(body));
         WWW www = new WWW (url, body, headers);
