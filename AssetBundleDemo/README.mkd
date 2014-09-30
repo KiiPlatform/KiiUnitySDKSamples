@@ -3,6 +3,7 @@
 
 ## How to try the demo
 1. Edit `APP_ID`, `APP_KEY`, `CLIENT_ID`, `CLIENT_SECRET` and `SITE` in `/Asset/Editor/ExportAssetBundles.cs`
+1. Edit `APP_ID`, `APP_KEY` and `SITE` in `/Asset/Script/DemoInitializeBehaviour.cs`
 1. Select `/Asset/AssetBundle/AB01.prefab` and right-click -> [Build AssetBundle From Selection]
 1. AssetBundle will be built and upload to the KiiCloud.
 1. Run the scene `/Assets/Scene/Main.unity`
