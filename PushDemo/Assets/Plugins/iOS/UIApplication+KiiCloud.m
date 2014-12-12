@@ -11,7 +11,26 @@
 
 void registerForRemoteNotifications()
 {
-	[[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+    //UIApplication+KiiCloud.m line 14
+    UIApplication *application = [UIApplication sharedApplication];
+    // Register APNS
+    // If you use Xcode5, you can only use the same code as the else block.
+    if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        // iOS8 : you can define categories and action below
+        
+        UIUserNotificationSettings* notificationSettings =
+        [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeBadge |
+         UIUserNotificationTypeSound |
+         UIUserNotificationTypeAlert
+                                          categories:nil];
+        [application registerUserNotificationSettings:notificationSettings];
+        [application registerForRemoteNotifications];
+    } else {
+        // iOS7 or earlier
+        [application registerForRemoteNotificationTypes:(UIRemoteNotificationTypeBadge |
+                                                         UIRemoteNotificationTypeSound |
+                                                         UIRemoteNotificationTypeAlert)];
+    }
 }
 
 void unregisterForRemoteNotifications()
