@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 using KiiCorp.Cloud.Storage;
 using System;
 using System.Collections;
@@ -59,6 +59,8 @@ namespace KiiCorp.Cloud.Unity
 		extern static public void unregisterForRemoteNotifications();
 		[System.Runtime.InteropServices.DllImport("__Internal")]
 		extern static public void setListenerGameObject(string listenerName);
+		[System.Runtime.InteropServices.DllImport("__Internal")]
+		extern static public string getLastMessage();
 		#elif UNITY_ANDROID
 		private static AndroidJavaObject kiiPush = null;
 		#endif
@@ -143,7 +145,7 @@ namespace KiiCorp.Cloud.Unity
 			Debug.Log ("#####KiiPush Device Token :" + deviceToken);
 			this.callback (deviceToken, null);
 		}
-		void onDidFailToRegisterForRemoteNotificationsWithError(string error)
+		void OnDidFailToRegisterForRemoteNotificationsWithError(string error)
 		{
 			this.callback (null, new Exception(error));
 		}
@@ -169,7 +171,7 @@ namespace KiiCorp.Cloud.Unity
 					return;
 				}
 				using(var pluginClass = new AndroidJavaClass("com.kii.cloud.unity.KiiPushUnityPlugin"))
-					kiiPush = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
+				kiiPush = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
 				
 				kiiPush.Call("setListenerGameObjectName", this.gameObject.name);
 				kiiPush.Call("setSenderId", this.SenderID);
@@ -265,6 +267,22 @@ namespace KiiCorp.Cloud.Unity
 		}
 		#endif
 
+		#if UNITY_IPHONE
+		public string GetLastMessage()
+		{
+			return getLastMessage();
+		}
+		#elif UNITY_ANDROID
+		public string GetLastMessage()
+		{
+			return kiiPush.Call<string>("getLastMessage");
+		}
+		#else
+		public string GetLastMessage()
+		{
+			return null;
+		}
+		#endif
 		
 		/// <summary>
 		/// This method is called by the unity native plugin when received push message.
@@ -278,8 +296,15 @@ namespace KiiCorp.Cloud.Unity
 			{
 				Debug.Log ("#####OnPushNotificationsReceived");
 				Debug.Log ("#####payload=" + payload);
-				ReceivedMessage message = ReceivedMessage.Parse (payload);
-				this.OnPushMessageReceived (message);
+				if (this.OnPushMessageReceived != null)
+				{
+					ReceivedMessage message = ReceivedMessage.Parse (payload);
+					this.OnPushMessageReceived (message);
+				}
+				else
+				{
+					Debug.Log("#####WARN:Event OnPushMessageReceived is not bound");
+				}
 			}
 			catch (Exception e)
 			{
