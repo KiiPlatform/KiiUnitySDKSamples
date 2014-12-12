@@ -29,6 +29,30 @@ void setListenerGameObject(char * listenerName)
 	strcpy(listenerGameObject, listenerName);
 }
 
+char* cStringCopy(const char* string)
+{
+    if (string == NULL)
+        return NULL;
+    char* res = (char*)malloc(strlen(string) + 1);
+    strcpy(res, string);
+    return res;
+}
+char* getLastMessage()
+{
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    NSString *message = [ud stringForKey:@"LAST_MESSAGE"];
+    if (message)
+    {
+        [ud removeObjectForKey:@"LAST_MESSAGE"];
+        [ud synchronize];
+        return cStringCopy([message UTF8String]);;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 @implementation UIApplication (KiiCloud)
 +(void)load
 {
@@ -110,6 +134,9 @@ void kiiRunTimeDidReceiveRemoteNotification(id self, SEL _cmd, id application, i
     
     if (jsonString)
     {
+        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+        [ud setObject:jsonString forKey:@"LAST_MESSAGE"];
+        [ud synchronize];
         const char * str = [jsonString UTF8String];
         UnitySendMessage(listenerGameObject, "OnPushNotificationsReceived", str);
     }
