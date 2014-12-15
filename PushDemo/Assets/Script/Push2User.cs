@@ -148,7 +148,7 @@ public class Push2User : MonoBehaviour
                             if (e5 is ConflictException)
                             {
                                 this.message += "Topic is already subscribed" + "\n";
-                                this.message += "Push is ready";
+                                this.message += "Push is ready, KiiUser login name : " + USER_NAME;
                                 Debug.Log ("#####all setup success!!!!!!");
                                 return;
                             }
@@ -156,7 +156,7 @@ public class Push2User : MonoBehaviour
                             this.ShowException ("Failed to subscribe topic", e5);
                             return;
                         }
-                        this.message += "Push is ready";
+                        this.message += "Push is ready, KiiUser login name : " + USER_NAME;
                         Debug.Log ("#####all setup success!!!!!!");
                     });
                 });
