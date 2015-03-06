@@ -31,97 +31,6 @@ namespace KiiCorp.Cloud.Storage.Connector
             Exception exception);
 
     /// <summary>
-    /// Supported social network.
-    /// </summary>
-    /// <remarks>
-    /// This enum is used for KiiSocialNetworkConnector.LogIn(Provider,
-    /// KiiUserCallback). KiiSocialNetworkConnector can be used by iOS and
-    /// Android environments only.
-    /// </remarks>
-    public enum Provider
-    {
-        /// <summary>
-        /// Facebook
-        /// </summary>
-        /// <remarks>
-        /// User Facebook to authenticate.
-        /// </remarks>
-        FACEBOOK,
-
-        /// <summary>
-        /// Twitter
-        /// </summary>
-        /// <remarks>
-        /// Use Twitter to authenticate
-        /// </remarks>
-        TWITTER,
-
-        /// <summary>
-        /// Twitter
-        /// </summary>
-        /// <remarks>
-        /// Use LinkedIn to authenticate
-        /// </remarks>
-        LINKEDIN,
-
-        /// <summary>
-        /// Yahoo
-        /// </summary>
-        /// <remarks>
-        /// Use Yahoo to authenticate
-        /// </remarks>
-        YAHOO,
-
-        /// <summary>
-        /// Google
-        /// </summary>
-        /// <remarks>
-        /// Use Google to authenticate
-        /// </remarks>
-        GOOGLE,
-
-        /// <summary>
-        /// Dropbox
-        /// </summary>
-        /// <remarks>
-        /// Use Dropbox to authenticate
-        /// </remarks>
-        DROPBOX,
-
-        /// <summary>
-        /// Box
-        /// </summary>
-        /// <remarks>
-        /// Use Box to authenticate
-        /// </remarks>
-        BOX,
-
-        /// <summary>
-        /// RenRen
-        /// </summary>
-        /// <remarks>
-        /// Use RenRen to authenticate
-        /// </remarks>
-        RENREN,
-
-        /// <summary>
-        /// Sina
-        /// </summary>
-        /// <remarks>
-        /// Use Sina Weibo to authenticate
-        /// </remarks>
-        SINA,
-
-        /// <summary>
-        /// Live
-        /// </summary>
-        /// <remarks>
-        /// Use Live to authenticate
-        /// </remarks>
-        LIVE
-    }
-
-    /// <summary>
     /// Provides API that allows user to authenticate on KiiCloud through
     /// various social networks.
     /// </summary>
@@ -207,6 +116,9 @@ namespace KiiCorp.Cloud.Storage.Connector
         /// <exception cref='ArgumentNullException'>
         /// Exception is thrown when one or more arguments are null.
         /// </exception>
+        /// <exception cref='NotSupportedException'>
+        /// Exception is thrown when the specified provider is not supported.
+        /// </exception>
         public void LogIn(
                 Provider provider,
                 KiiSocialCallback callback)
@@ -218,6 +130,10 @@ namespace KiiCorp.Cloud.Storage.Connector
             if (!Enum.IsDefined(typeof(Provider), provider))
             {
                 throw new ArgumentException("invalid provider");
+            }
+            if (provider == Provider.QQ)
+            {
+                throw new NotSupportedException("QQ is not supported.");
             }
             this.callback = callback;
             this.provider = provider;
@@ -259,11 +175,11 @@ namespace KiiCorp.Cloud.Storage.Connector
 
                         // callback is not needed to check null. That is done
                         // in LogIn method.
-                        this.callback(
-                            CreateCurrentKiiUser(
-                                ParseUrl(json.GetJsonObject(
-                                            "value").GetString("url"))),
-                            this.provider, null);
+                        KiiUser user = CreateCurrentKiiUser(ParseUrl(json.GetJsonObject(
+                            "value").GetString("url")));
+                        user.Refresh((KiiUser usr, Exception e) => {
+                            this.callback(usr, this.provider, null);
+                        });
                         return;
                     case "error":
                         throw new NativeInteractionException(
