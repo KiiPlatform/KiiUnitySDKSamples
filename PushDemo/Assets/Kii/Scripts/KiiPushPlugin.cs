@@ -17,7 +17,7 @@ namespace KiiCorp.Cloud.Unity
 	/// <term>Create an empty GameObject and attach the KiiPushPlugin.cs to it.</term>
 	/// </item>
 	/// <item>
-	/// <term>Replace 'YOUR_APPLICATION_PACKAGE_NAME' with the value of your package name in the AndroidManifest.xml.</term>
+	/// <term>Replace 'com.example.your.application.package.name' with the value of your package name in the AndroidManifest.xml.</term>
 	/// </item>
 	/// <item>
 	/// <term>Set the SenderID to KiiPushPlugin GameObject for GCM.</term>

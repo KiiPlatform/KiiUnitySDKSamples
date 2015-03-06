@@ -23,4 +23,5 @@ NSLog(message, ##__VA_ARGS__);
 - (void)application:(UIApplication *)application kiiDidReceiveRemoteNotification:(NSDictionary *)userInfo;
 - (void)application:(UIApplication *)application kiiDidReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler;
 - (BOOL)application:(UIApplication *)application kiiDidFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+- (void)application:(UIApplication *)application kiiHandleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo completionHandler:(void(^)())completionHandler;
 @end
