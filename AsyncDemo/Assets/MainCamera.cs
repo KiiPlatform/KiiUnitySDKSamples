@@ -5,10 +5,6 @@ using System.Collections;
 
 public class MainCamera : MonoBehaviour {
 
-//	private const string APP_ID = "e8e2563e";
-//	private const string APP_KEY = "a084a2fe9957f78cc6aeae264000eb12";
-//	private const Kii.Site APP_SITE = Kii.Site.US;
-
 	private IPage currentPage;
 	private Stack pageStack = new Stack();
 
