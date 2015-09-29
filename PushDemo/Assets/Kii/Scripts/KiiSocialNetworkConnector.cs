@@ -268,6 +268,15 @@ namespace KiiCorp.Cloud.Storage.Connector
                 dictionary.Add(KiiUser.SocialResultParams.OAUTH_TOKEN_SECRET,
                         queryParameters["oauth_token_secret"]);
             }
+            if (queryParameters.ContainsKey("kii_expires_in"))
+            {
+                dictionary.Add("kii_expires_in",
+                        queryParameters["kii_expires_in"]);
+            }
+            if (queryParameters.ContainsKey("oauth_token_expires_in")) {
+                dictionary.Add("oauth_token_expires_in",
+                    queryParameters["oauth_token_expires_in"]);
+            }
             _KiiInternalUtils.SetSocialAccessTokenDictionary(retval,
                     dictionary);
 
@@ -329,8 +338,12 @@ namespace KiiCorp.Cloud.Storage.Connector
                     return "linkedin";
                 case Provider.YAHOO:
                     return "yahoo";
+                case Provider.GOOGLEPLUS:
+                    return "googleplus";
+#pragma warning disable 0618
                 case Provider.GOOGLE:
                     return "google";
+#pragma warning restore 0618
                 case Provider.DROPBOX:
                     return "dropbox";
                 case Provider.BOX:
@@ -341,6 +354,8 @@ namespace KiiCorp.Cloud.Storage.Connector
                     return "sina";
                 case Provider.LIVE:
                     return "live";
+                case Provider.KII:
+                    return "kii";
                 default:
                     throw new SystemException("unexpected error provider=" +
                             this.provider.ToString());

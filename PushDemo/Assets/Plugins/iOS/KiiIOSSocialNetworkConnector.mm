@@ -1,14 +1,17 @@
 #import <UIKit/UIKit.h>
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 extern UIViewController *UnityGetGLViewController();
 extern "C" void UnitySendMessage(const char *, const char *, const char *);
 
-@interface KiiIOSSocialNetworkConnector : NSObject<UIWebViewDelegate>
+@interface KiiIOSSocialNetworkConnector : NSObject<UIWebViewDelegate>{
+    UIActivityIndicatorView *loading;
+}
 @property (nonatomic, retain) UIWebView *webView;
-@property (nonatomic, retain) UIButton *cancelButton;
 @property (nonatomic, retain) NSString *gameObjectName;
 @property (nonatomic, retain) NSString *endPointUrl;
 @property (nonatomic, assign) BOOL isFinished;
+@property (nonatomic, retain) UINavigationController* webNav;
 @end
 
 @implementation KiiIOSSocialNetworkConnector
@@ -19,22 +22,39 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
     self = [super init];
     if (self != nil) {
         self.isFinished = NO;
-
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [[UINavigationBar appearance] setBarTintColor:UIColorFromRGB(0x067AB5)];
+        });
+        
         // Initialize fields.
-        self.webView = [[UIWebView alloc] init];
-        self.webView.delegate = self;
-        self.cancelButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        [self.cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
-        [self.cancelButton addTarget:self
-                              action:@selector(onTapButton:)
-                    forControlEvents:UIControlEventTouchUpInside];
+        _webView = [[UIWebView alloc] init];
+        _webView.delegate = self;
+        UIViewController* webVC= [[UIViewController alloc] init];
+        
+        webVC.view.backgroundColor = [UIColor whiteColor];
+        
+        webVC.view = self.webView;
+        
+        _webNav=[[UINavigationController alloc] initWithRootViewController:webVC];
+        
+        UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
+        cancelButton.tintColor= [UIColor whiteColor];
+        webVC.navigationItem.leftBarButtonItem=cancelButton;
+        
+        CGRect frame = CGRectMake(0.0, 0.0, 25.0, 25.0);
+        loading = [[UIActivityIndicatorView alloc] initWithFrame:frame];
+        [loading sizeToFit];
+        loading.autoresizingMask = (UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin);
+        [loading startAnimating];
+        UIBarButtonItem *statusInd = [[UIBarButtonItem alloc] initWithCustomView:loading];
+        statusInd.style = UIBarButtonItemStylePlain;
+        webVC.navigationItem.rightBarButtonItem = statusInd;
+        
+        [self.webView setScalesPageToFit:YES];
         self.gameObjectName = gameObjectName;
         self.endPointUrl = endPointUrl;
-
-        // add view to parent view..
-        UIView *parent = UnityGetGLViewController().view;
-        [parent addSubview:self.webView];
-        [parent addSubview:self.cancelButton];
+        
     }
     return self;
 }
@@ -43,15 +63,11 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
 {
     self.endPointUrl = nil;
     self.gameObjectName = nil;
-    [self.cancelButton removeFromSuperview];
-    [self.cancelButton removeTarget:self
-                             action:@selector(onTapButton:)
-                   forControlEvents:UIControlEventTouchUpInside];
-    self.cancelButton = nil;
     [self.webView stopLoading];
-    [self.webView removeFromSuperview];
     self.webView.delegate = nil;
     self.webView = nil;
+    loading = nil;
+    self.webNav = nil;
     [super dealloc];
 }
 
@@ -65,13 +81,14 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
         return YES;
     }
     [self sendMessageToCSharpLayerWithDictionary:@{
-                @"type" : @"finished",
-                @"value" : @{ @"url" : url }}];
+                                                   @"type" : @"finished",
+                                                   @"value" : @{ @"url" : url }}];
     return NO;
 }
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
 {
+    [loading stopAnimating];
     if([[error domain] isEqual:NSURLErrorDomain] != NO) {
         switch ([error code]) {
             case NSURLErrorTimedOut:
@@ -88,9 +105,19 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     }
     [self sendMessageToCSharpLayerWithDictionary:@{@"type" : @"retry" }];
 }
-
-- (void)onTapButton:(id)sender
+-(void)webViewDidFinishLoad:(UIWebView *)webView{
+    [loading stopAnimating];
+}
+-(void)webViewDidStartLoad:(UIWebView *)webView{
+    [loading startAnimating];
+}
+- (void)cancel:(id)sender
 {
+    [self.webView stopLoading];
+    UIWindow* window =[[[UIApplication sharedApplication] delegate] window];
+    [window.rootViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
     [self sendMessageToCSharpLayerWithDictionary:@{@"type" : @"canceled" }];
 }
 
@@ -102,95 +129,76 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
         }
         self.isFinished = YES;
     }
-
+    
     NSError *error = nil;
     NSData *data = [NSJSONSerialization
-                     dataWithJSONObject:dictonary
-                                options:NSJSONWritingPrettyPrinted
-                                  error:&error];
+                    dataWithJSONObject:dictonary
+                    options:NSJSONWritingPrettyPrinted
+                    error:&error];
     NSString *message = error == nil ?
-        [[[NSString alloc] initWithData:data
-                               encoding:NSUTF8StringEncoding] autorelease] :
-        [NSString stringWithFormat:@"{ \"type\" : \"error\", \"value\" : { \"message\" : \"%@\"} }", [error description]];
-
+    [[[NSString alloc] initWithData:data
+                           encoding:NSUTF8StringEncoding] autorelease] :
+    [NSString stringWithFormat:@"{ \"type\" : \"error\", \"value\" : { \"message\" : \"%@\"} }", [error description]];
+    
     UnitySendMessage([self.gameObjectName UTF8String],
-            "OnSocialAuthenticationFinished", [message UTF8String]);
+                     "OnSocialAuthenticationFinished", [message UTF8String]);
 }
 
 
 @end
 
 extern "C" {
-  void *_KiiIOSSocialNetworkConnector_StartAuthentication(
-          const char* gameObjectName,
-          const char* accessUrl,
-          const char* endPointUrl,
-          float left,
-          float right,
-          float top,
-          float bottom);
-  void _KiiIOSSocialNetworkConnector_Destroy(void *instance);
+    void *_KiiIOSSocialNetworkConnector_StartAuthentication(
+                                                            const char* gameObjectName,
+                                                            const char* accessUrl,
+                                                            const char* endPointUrl,
+                                                            float left,
+                                                            float right,
+                                                            float top,
+                                                            float bottom);
+    void _KiiIOSSocialNetworkConnector_Destroy(void *instance);
 }
 
-static CGRect createSuitableRectangle(
-        float left,
-        float right,
-        float top,
-        float bottom);
-
 void *_KiiIOSSocialNetworkConnector_StartAuthentication(
-        const char* gameObjectName,
-        const char* accessUrl,
-        const char* endPointUrl,
-        float x,
-        float y,
-        float width,
-        float height)
+                                                        const char* gameObjectName,
+                                                        const char* accessUrl,
+                                                        const char* endPointUrl,
+                                                        float x,
+                                                        float y,
+                                                        float width,
+                                                        float height)
 {
     // Create KiiIOSSocialNetworkConnector.
     KiiIOSSocialNetworkConnector *retval =
-        [[KiiIOSSocialNetworkConnector alloc]
-          initWithGameObjectName:[NSString stringWithUTF8String:gameObjectName]
-                     endPointUrl:[NSString stringWithUTF8String:endPointUrl]];
-
-    // change offset to rectangle.
-    CGRect rect = createSuitableRectangle(x, y, width, height);
-
-    // Set rectangles.
-    float webViewHeight = rect.size.height * 0.8;
-    retval.webView.frame = CGRectMake(
-                rect.origin.x,
-                rect.origin.y,
-                rect.size.width,
-                webViewHeight);
-    retval.cancelButton.frame = CGRectMake(
-                rect.origin.x,
-                rect.origin.y + webViewHeight,
-                rect.size.width,
-                rect.size.height - webViewHeight);
-
+    [[KiiIOSSocialNetworkConnector alloc]
+     initWithGameObjectName:[NSString stringWithUTF8String:gameObjectName]
+     endPointUrl:[NSString stringWithUTF8String:endPointUrl]];
+    
+    
+    
     [retval.webView
-        loadRequest:
-            [NSURLRequest requestWithURL:
-                    [NSURL URLWithString:
-                             [NSString stringWithUTF8String:accessUrl]]]];
+     loadRequest:
+     [NSURLRequest requestWithURL:
+      [NSURL URLWithString:
+       [NSString stringWithUTF8String:accessUrl]]]];
+    UIWindow* window =[[[UIApplication sharedApplication] delegate] window];
+    [window.rootViewController presentViewController:retval.webNav animated:YES completion:^{
+        
+    }];
+    
     return retval;
 }
 
 void _KiiIOSSocialNetworkConnector_Destroy(void *instance)
 {
     KiiIOSSocialNetworkConnector *connector =
-        (KiiIOSSocialNetworkConnector *)instance;
-    [connector release];
-}
-
-static CGRect createSuitableRectangle(
-        float x,
-        float y,
-        float width,
-        float height)
-{
-    float scale = [UIScreen instancesRespondToSelector:@selector(scale)] ?
-            [UIScreen mainScreen].scale : 1.0f;
-    return CGRectMake(x / scale, y / scale, width / scale, height / scale);
+    (KiiIOSSocialNetworkConnector *)instance;
+    if (connector.webNav.isBeingDismissed) {
+        [connector release];
+    }else{
+        UIWindow* window =[[[UIApplication sharedApplication] delegate] window];
+        [window.rootViewController dismissViewControllerAnimated:YES completion:^{
+            [connector release];
+        }];
+    }
 }

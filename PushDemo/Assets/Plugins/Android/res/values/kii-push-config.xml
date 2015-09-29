@@ -9,6 +9,7 @@
 	<string name="kii_push_app_vibrationMilliseconds">0</string>
 	<!-- You can use literal string or JSONPath -->
 	<string name="kii_push_app_notificationTitle"></string>
+	<string name="kii_push_app_notificationTicker"></string>
 	<string name="kii_push_app_notificationText"></string>
 
 	<!-- Push To User -->
@@ -19,6 +20,7 @@
 	<string name="kii_push_user_vibrationMilliseconds">0</string>
 	<!-- You can use literal string or JSONPath -->
 	<string name="kii_push_user_notificationTitle"></string>
+	<string name="kii_push_user_notificationTicker"></string>
 	<string name="kii_push_user_notificationText"></string>
 
 	<!-- Direct Push -->
@@ -29,6 +31,7 @@
 	<string name="kii_push_direct_vibrationMilliseconds">0</string>
 	<!-- You can use literal string or JSONPath -->
 	<string name="kii_push_direct_notificationTitle"></string>
+	<string name="kii_push_direct_notificationTicker"></string>
 	<string name="kii_push_direct_notificationText"></string>
 
 </resources>
