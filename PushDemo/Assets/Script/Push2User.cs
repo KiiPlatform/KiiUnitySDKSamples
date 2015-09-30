@@ -270,6 +270,10 @@ public class Push2User : MonoBehaviour
                 KiiPushSubscription subscription = user.PushSubscription;
                 subscription.Unsubscribe (topic, (KiiSubscribable target, Exception e) => {
                     if (e != null) {
+                        if (e is ConflictException) {
+                            this.message += "\n" + "Topic is already subscribed";
+                            return;
+                        }
                         Debug.Log ("#####" + e.Message);
                         Debug.Log ("#####" + e.StackTrace);
                         this.ShowException ("#####Unsubscribe is failed!!", e);

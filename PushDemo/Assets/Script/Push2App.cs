@@ -190,6 +190,10 @@ public class Push2App : MonoBehaviour
             KiiPushSubscription subscription = user.PushSubscription;
             subscription.Subscribe (bucket, (KiiSubscribable target, Exception e) => {
                 if (e != null) {
+                    if (e is ConflictException) {
+                        this.message += "\n" + "Bucket is already subscribed";
+                        return;
+                    }
                     Debug.Log ("#####" + e.Message);
                     Debug.Log ("#####" + e.StackTrace);
                     this.ShowException ("#####Subscribe is failed!!", e);
