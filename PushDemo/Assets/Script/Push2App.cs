@@ -52,7 +52,7 @@ public class Push2App : MonoBehaviour
             Invoke ("registerPush", 0);
             return;
         }
-
+        Debug.Log ("##### USER = " + USER_NAME);
         KiiUser.LogIn (USER_NAME, PASSWORD, (KiiUser u1, Exception e1) => {
             if (e1 != null) {
                 KiiUser newUser = KiiUser.BuilderWithName (USER_NAME).Build ();
